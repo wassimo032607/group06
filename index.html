@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نتائج الطلبة الفوج 6</title>
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#020617;
+      --card:#0b1220; --line:#1f2933;
+      --accent:#22c55e; --accent2:#16a34a;
+      --text:#e5e7eb; --muted:#94a3b8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh;
+      font-family: system-ui, -apple-system, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1f2933 0%, transparent 40%),
+        radial-gradient(800px 400px at 110% 10%, #064e3b 0%, transparent 40%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      display:flex; align-items:center; justify-content:center;
+      padding:16px;
+    }
+    .app{width:100%; max-width:420px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)) , var(--card);
+      border:1px solid var(--line);
+      border-radius:20px; padding:16px 14px 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter: blur(6px);
+    }
+    h1{margin:6px 0 14px; text-align:center; font-size:1.15rem;}
+    .badge{
+      display:inline-block; margin:0 auto 8px; padding:6px 10px;
+      border-radius:999px; font-size:.75rem; color:#022c22;
+      background:linear-gradient(135deg, #86efac, #22c55e);
+      box-shadow:0 6px 16px rgba(34,197,94,.35);
+    }
+    .field{display:flex; gap:8px; margin-bottom:10px;}
+    input{
+      flex:1; padding:12px 14px; border-radius:14px;
+      border:1px solid var(--line); outline:none;
+      background:#020617; color:var(--text); font-size:1rem;
+    }
+    button{
+      width:100%; padding:12px 14px; border-radius:14px; border:none;
+      font-weight:800; cursor:pointer;
+      color:#022c22;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow:0 10px 24px rgba(34,197,94,.35);
+    }
+    .result{
+      margin-top:12px; padding:12px; border-radius:14px;
+      background:#020617; border:1px solid var(--line);
+    }
+    .cardRow{
+      margin-bottom:10px; padding:10px; border-radius:12px;
+      border:1px dashed #111827; background:#020617;
+      animation: pop .2s ease-out both;
+    }
+    @keyframes pop{from{transform:scale(.98); opacity:.6} to{transform:scale(1); opacity:1}}
+    .row{display:flex; justify-content:space-between; gap:10px; padding:4px 0;}
+    .label{color:var(--muted); font-size:.9rem}
+    .value{font-weight:800}
+    .grade{
+      font-size:1.1rem;
+      background:linear-gradient(135deg, #a7f3d0, #34d399);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter: drop-shadow(0 2px 8px rgba(52,211,153,.35));
+    }
+    .error{margin-top:10px; color:#f87171; text-align:center; display:none}
+    footer{text-align:center; opacity:.8; margin-top:10px; font-size:.8rem;}
+    .dev{margin-top:6px; text-align:center; font-size:.8rem; color:#a7f3d0;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div style="text-align:center">
+        <span class="badge">الفوج 6</span>
+        <h1>البحث عن نتيجة الطالب بالاسم</h1>
+      </div>
+
+      <div class="field">
+        <input id="nameInput" type="text" placeholder="اكتب الاسم أو اللقب (عربي)" />
+      </div>
+      <button onclick="searchByName()">بحث 🔎</button>
+
+      <div id="results" class="result" style="display:none;"></div>
+      <div id="error" class="error">لا توجد نتائج مطابقة ❌</div>
+    </div>
+
+    <footer>© جميع الحقوق محفوظة</footer>
+    <div class="dev">هذا الموقع من تطوير <strong>حروز نسيم</strong> 💚</div>
+  </div>
+
+  <script>
+    const students = [
+      { reg: "252535566209", lastName: "بن عيسى", firstName: "تسنيم مروة", grade: 12 },
+      { reg: "232535686920", lastName: "بري", firstName: "وفاء", grade: 16 },
+      { reg: "242535695405", lastName: "بولعراس", firstName: "أشواق", grade: 13 },
+      { reg: "242535686009", lastName: "بوراس", firstName: "آية", grade: 15.5 },
+      { reg: "252535686906", lastName: "بوطبيق", firstName: "نور الهدى", grade: 17 },
+      { reg: "242535694110", lastName: "شريط", firstName: "بسملة", grade: 16 },
+      { reg: "212535678113", lastName: "دريسي", firstName: "إسمهان", grade: 18 },
+      { reg: "242535681108", lastName: "غربي", firstName: "سوسن", grade: 13 },
+      { reg: "252535600705", lastName: "حليتيم", firstName: "نور الهدى", grade: 12 },
+      { reg: "212535684408", lastName: "حروز", firstName: "نسيم", grade: 14 },
+      { reg: "242535676915", lastName: "حشايشي", firstName: "آمنة", grade: 13.5 },
+      { reg: "252535633519", lastName: "خلف الله", firstName: "مريم", grade: 14.5 },
+      { reg: "242535720006", lastName: "لعباشي", firstName: "حنين", grade: 12 },
+      { reg: "252535596107", lastName: "لعميد", firstName: "فرح", grade: 17 },
+      { reg: "232535680413", lastName: "لغوق", firstName: "سارة", grade: 15.5 },
+      { reg: "252535637305", lastName: "العلجي", firstName: "نسيبة", grade: 16 },
+      { reg: "232535681020", lastName: "لطرش", firstName: "سهى", grade: 18 },
+      { reg: "252535694117", lastName: "مكيد", firstName: "بلقيس", grade: 11 },
+      { reg: "252535651409", lastName: "مرزوقي", firstName: "زهرة", grade: 14 },
+      { reg: "252535581717", lastName: "مزيلخ", firstName: "صبيرة", grade: 15 },
+      { reg: "252535590313", lastName: "مقراني", firstName: "بسملة", grade: 10.5 },
+      { reg: "242535680712", lastName: "وناني", firstName: "سلسبيل", grade: 18 },
+      { reg: "252535634703", lastName: "رحالي", firstName: "خولة", grade: 15 },
+      { reg: "252535648417", lastName: "روباش", firstName: "رميصاء", grade: 18 },
+      { reg: "252535637607", lastName: "سحنون", firstName: "لبنى", grade: 16 },
+      { reg: "252535604408", lastName: "سليماني", firstName: "إلهام", grade: 13.5 },
+      { reg: "252535644711", lastName: "طيبي", firstName: "نسرين", grade: 15 },
+      { reg: "242535713706", lastName: "ثامري", firstName: "جمانة", grade: 18 },
+      { reg: "252535621716", lastName: "يحياوي", firstName: "زينب", grade: 16.5 },
+      { reg: "252535614614", lastName: "زقعار", firstName: "محمد مصطفى", grade: 10 },
+      { reg: "242535682907", lastName: "زواوي", firstName: "لميس", grade: 15 },
+      { reg: "252535666501", lastName: "ديلمي", firstName: "عبير", grade: 12 }
+    ];
+
+    function normalize(s){
+      return s.toLowerCase().replace(/\s+/g,'').trim();
+    }
+
+    function searchByName(){
+      const q = normalize(document.getElementById("nameInput").value || "");
+      const box = document.getElementById("results");
+      const err = document.getElementById("error");
+
+      if(!q){
+        box.style.display = "none";
+        err.style.display = "block";
+        err.textContent = "اكتب الاسم أو اللقب للبحث ⚠️";
+        return;
+      }
+
+      const matches = students.filter(s =>
+        normalize(s.firstName).includes(q) ||
+        normalize(s.lastName).includes(q)
+      );
+
+      if(matches.length){
+        box.innerHTML = matches.map(s => `
+          <div class="cardRow">
+            <div class="row"><div class="label">رقم التسجيل</div><div class="value">${s.reg}</div></div>
+            <div class="row"><div class="label">اللقب</div><div class="value">${s.lastName}</div></div>
+            <div class="row"><div class="label">الاسم</div><div class="value">${s.firstName}</div></div>
+            <div class="row"><div class="label">العلامة</div><div class="value grade">${s.grade}</div></div>
+          </div>
+        `).join("");
+        box.style.display = "block";
+        err.style.display = "none";
+      } else {
+        box.style.display = "none";
+        err.style.display = "block";
+        err.textContent = "لا توجد نتائج مطابقة ❌";
+      }
+    }
+  </script>
+</body>
+</html>
